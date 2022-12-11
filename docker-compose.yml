@@ -1,0 +1,43 @@
+version: '3.7'
+
+networks:
+  db:
+
+services:
+
+  db:
+    container_name: ${PREFIX}_db
+    image: mariadb:${MARIA_DB_VERSION}
+    healthcheck:
+      test: mysqladmin ping -u ${MYSQL_ROOT_USER} --password=${MYSQL_ROOT_PASSWORD}
+      timeout: 45s
+      interval: 10s
+      retries: 10
+      start_period: 20s
+    restart: always
+    ports:
+      - "127.0.0.1:3306:3306"
+    environment:
+      - MYSQL_ROOT_USER=${MYSQL_ROOT_USER}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    volumes:
+      - ${DB_PATH_HOST}:/var/lib/mysql
+    networks:
+      - db
+
+  liquibase:
+    container_name: ${PREFIX}
+    image: liquibase/liquibase:${LIQUIBASE_VERSION}
+    volumes:
+      - ${LIQUIBASE_PATH}:/liquibase/changelog
+#    command: liquibase --url="jdbc:mariadb://db:3306/test" --changeLogFile=./changelog/changelog.xml --username=root --password=root rollbackCount 5
+#    command: liquibase --url="jdbc:mariadb://db:3306/test" --changeLogFile=./changelog/changelog.xml --username=root --password=root tag t-1.0
+#    command: liquibase --url="jdbc:mariadb://db:3306/test" --changeLogFile=./changelog/changelog.xml --username=root --password=root rollback t-1.0
+    command: liquibase --url="jdbc:mariadb://db:3306/test" --changeLogFile=./changelog/changelog.xml --username=root --password=root update
+#    command: liquibase --url="jdbc:mariadb://db:3306/test" --username=root --password=root --changeLogFile=mydatabase_changelog.xml generateChangeLog
+    depends_on:
+      - db
+    networks:
+      - db
