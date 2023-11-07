@@ -16,7 +16,7 @@ services:
       start_period: 20s
     restart: always
     ports:
-      - "127.0.0.1:3306:3306"
+      - "3307:3306"
     environment:
       - MYSQL_ROOT_USER=${MYSQL_ROOT_USER}
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
@@ -35,8 +35,22 @@ services:
 #    command: liquibase --url="jdbc:mariadb://db:3306/test" --changeLogFile=./changelog/changelog.xml --username=root --password=root rollbackCount 5
 #    command: liquibase --url="jdbc:mariadb://db:3306/test" --changeLogFile=./changelog/changelog.xml --username=root --password=root tag t-1.0
 #    command: liquibase --url="jdbc:mariadb://db:3306/test" --changeLogFile=./changelog/changelog.xml --username=root --password=root rollback t-1.0
-    command: liquibase --url="jdbc:mariadb://db:3306/test" --changeLogFile=./changelog/changelog.xml --username=root --password=root update
+    command: liquibase --url=jdbc:mariadb://db:3306/test --changeLogFile=./changelog/changelog.sql --username=root --password=root update
+#    command: liquibase --url=jdbc:mariadb://db:3306/test --changeLogFile=./changelog/changelog.xml --username=root --password=root rollbackCount 10
+#    command: liquibase --url=jdbc:mariadb://db:3306/test --changeLogFile=./changelog/changelog.xml --username=root --password=root rollback create-person
 #    command: liquibase --url="jdbc:mariadb://db:3306/test" --username=root --password=root --changeLogFile=mydatabase_changelog.xml generateChangeLog
+    depends_on:
+      - db
+    networks:
+      - db
+
+  flyway:
+    image: flyway/flyway
+#    command: -url=jdbc:mysql://db -schemas=test -user=root -password=root -connectRetries=60 migrate
+#    command: -url=jdbc:mysql://db -schemas=test -user=root -password=root -connectRetries=60 clean
+#    command: -url=jdbc:mysql://db -schemas=test -user=root -password=root -connectRetries=60 undo
+    volumes:
+      - ${FLYWAY_PATH}:/flyway/sql
     depends_on:
       - db
     networks:
